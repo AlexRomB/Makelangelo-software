@@ -23,6 +23,24 @@ public class LineInterpolatorTest {
         assertEquals(0.0, interpolator.getEnd().x, DELTA, "Default end point x should be 0.0.");
         assertEquals(0.0, interpolator.getEnd().y, DELTA, "Default end point y should be 0.0.");
     }
+    
+    // Test de la construction avec des points définis
+    @Test
+    public void testConstructorWithPoints() {
+
+        // ARRANGE
+        Point2D start = new Point2D(1, 2);
+        Point2D end = new Point2D(3, 4);
+
+        // ACT
+        LineInterpolator interpolator = new LineInterpolator(start, end);
+
+        // ASSERT
+        assertEquals(start.x, interpolator.getStart().x, DELTA, "Start point x-coordinate should be initialized correctly.");
+        assertEquals(start.y, interpolator.getStart().y, DELTA, "Start point y-coordinate should be initialized correctly.");
+        assertEquals(end.x, interpolator.getEnd().x, DELTA, "End point x-coordinate should be initialized correctly.");
+        assertEquals(end.y, interpolator.getEnd().y, DELTA, "End point y-coordinate should be initialized correctly.");
+    }
 
 
     // Test des setters et getters
