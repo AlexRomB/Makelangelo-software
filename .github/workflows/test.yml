@@ -7,50 +7,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        flags:
-          - "-Xms512m -Xmx1024m"             # Memory allocation flags
-          - "-XX:+UseG1GC"                   # Garbage collector flag
-          - "-XX:+PrintGCDetails"            # Garbage collection details for debugging
-          - "-XX:+HeapDumpOnOutOfMemoryError" # Memory dump on out-of-memory errors
-          - "-Djava.compiler=NONE"           # Disable JIT compiler to test impact on performance
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Set up JDK
-      uses: actions/setup-java@v4.2.1
+    - uses: actions/setup-java@v4.2.1
       with:
         distribution: 'temurin'
         java-version: '17'
         cache: 'maven'
 
-    - name: Build and Test with Maven and Flags
-      run: |
-        echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B clean test -DargLine="${{ matrix.flags }}" org.jacoco:jacoco-maven-plugin:prepare-agent
+    - name: Build and Test with Maven
       timeout-minutes: 15
-
-    - name: Generate JaCoCo Report
-      run: ./mvnw org.jacoco:jacoco-maven-plugin:report
+      run: ./mvnw -B verify
 
     - name: Get JaCoCo Coverage
-      id: coverage
+      id: coverage  
       run: |
-        echo "Calculating coverage for flags: ${{ matrix.flags }}"
-        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv)
-        
-        # Validate that coverage is not empty or invalid
-        if [ -z "$coverage" ] || ! [[ "$coverage" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
-          echo "Error: Invalid coverage value: $coverage"
-          exit 1
-        fi
-        
+        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
-    - name: Fail if coverage has not improved
+    - name: Fail if coverage has not improved.
       run: |
         coverage=$COVERAGE
         threshold=24.46
@@ -60,10 +36,3 @@ jobs:
         else
           echo "New coverage: $coverage%. Coverage is improved!"
         fi
-
-    - name: Upload Coverage Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: "Coverage Report - Flags ${{ matrix.flags }}"
-        path: target/site/jacoco
