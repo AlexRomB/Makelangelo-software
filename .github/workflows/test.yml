@@ -30,11 +30,11 @@ jobs:
     - name: Build and Test with Maven and Flags
       run: |
         echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B verify -DargLine="${{ matrix.flags }}" jacoco:prepare-agent
+        ./mvnw -B clean verify -DargLine="${{ matrix.flags }}" org.jacoco:jacoco-maven-plugin:prepare-agent
       timeout-minutes: 15
 
     - name: Generate JaCoCo Report
-      run: ./mvnw jacoco:report
+      run: ./mvnw org.jacoco:jacoco-maven-plugin:report
 
     - name: Get JaCoCo Coverage
       id: coverage
