@@ -33,13 +33,16 @@ jobs:
         ./mvnw -B verify -DargLine="${{ matrix.flags }}"
       timeout-minutes: 15
 
+    - name: Generate JaCoCo Report
+      run: ./mvnw jacoco:report
+
     - name: Get JaCoCo Coverage
       id: coverage
       run: |
         echo "Calculating coverage for flags: ${{ matrix.flags }}"
-        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
+        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv)
         
-        # Validate coverage and ensure the value is correct
+        # Validate that coverage is not empty or invalid
         if [ -z "$coverage" ] || ! [[ "$coverage" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
           echo "Error: Invalid coverage value: $coverage"
           exit 1
