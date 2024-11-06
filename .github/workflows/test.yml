@@ -7,14 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        flags:
-          - "-Xms256m -Xmx512m"
-          - "-ea"
-          - "-Duser.language=en -Duser.country=US"
-          - "-Duser.timezone=UTC"
-          - "-Djava.awt.headless=true"
 
     steps:
     - name: Checkout repository
@@ -27,15 +19,17 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Build and Test with Maven and Flags
-      run: |
-        echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B verify -DargLine="${{ matrix.flags }}"
+    - name: Build and Test with Maven
+      run: ./mvnw -B verify  # no flags to simplify and confirm JaCoCo works
       timeout-minutes: 15
+
+    - name: Check Target Directory Contents
+      run: ls -R target || echo "Target directory not found"
 
     - name: Get JaCoCo Coverage
       id: coverage  
       run: |
+        echo "Calculating coverage..."
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
@@ -54,5 +48,5 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: "Coverage Report - Flags ${{ matrix.flags }}"
+        name: "Coverage Report"
         path: target/site/jacoco
