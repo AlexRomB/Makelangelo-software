@@ -30,19 +30,27 @@ jobs:
     - name: Build and Test with Maven and Flags
       run: |
         echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B verify -DargLine="${{ matrix.flags }}"
+        ./mvnw -B verify -DargLine="${{ matrix.flags }}" jacoco:prepare-agent
       timeout-minutes: 15
 
     - name: Generate JaCoCo Report
       run: ./mvnw jacoco:report
 
     - name: Get JaCoCo Coverage
-      id: coverage  
+      id: coverage
       run: |
-        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
+        echo "Calculating coverage for flags: ${{ matrix.flags }}"
+        coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv)
+        
+        # Validate that coverage is not empty or invalid
+        if [ -z "$coverage" ] || ! [[ "$coverage" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+          echo "Error: Invalid coverage value: $coverage"
+          exit 1
+        fi
+        
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
-    - name: Fail if coverage has not improved.
+    - name: Fail if coverage has not improved
       run: |
         coverage=$COVERAGE
         threshold=24.46
@@ -51,7 +59,7 @@ jobs:
           exit 1
         else
           echo "New coverage: $coverage%. Coverage is improved!"
-        fi 
+        fi
 
     - name: Upload Coverage Report
       if: always()
