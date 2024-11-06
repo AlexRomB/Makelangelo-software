@@ -7,6 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flags:
+          - "-Xms256m -Xmx512m"                        # Memory allocation
+          - "-ea"                                      # Enable assertions
+          - "-Duser.language=en -Duser.country=US"     # Locale setting
+          - "-Duser.timezone=UTC"                      # Time zone setting
+          - "-Djava.awt.headless=true"                 # Headless mode
 
     steps:
     - name: Checkout repository
@@ -19,8 +27,10 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Build and Test with Maven
-      run: ./mvnw -B verify  # no flags to simplify and confirm JaCoCo works
+    - name: Build and Test with Maven and Flags
+      run: |
+        echo "Running build with flags: ${{ matrix.flags }}"
+        ./mvnw -B verify -DargLine="${{ matrix.flags }}"
       timeout-minutes: 15
 
     - name: Check Target Directory Contents
@@ -29,7 +39,7 @@ jobs:
     - name: Get JaCoCo Coverage
       id: coverage  
       run: |
-        echo "Calculating coverage..."
+        echo "Calculating coverage for flags: ${{ matrix.flags }}"
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
@@ -48,5 +58,5 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: "Coverage Report"
+        name: "Coverage Report - Flags ${{ matrix.flags }}"
         path: target/site/jacoco
