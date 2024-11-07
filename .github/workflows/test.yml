@@ -16,12 +16,9 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Set Maven JVM Options
+    - name: Set and Log Maven JVM Options
       run: |
         export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
-        
-    - name: Log JVM Options
-      run: |
         echo "Executing Maven build with the following JVM options:"
         echo "$MAVEN_OPTS"
 
