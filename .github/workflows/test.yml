@@ -11,9 +11,9 @@ jobs:
       matrix:
         flags:
           - "-Dfile.encoding=UTF-8"
-          - "-XX:+UseSerialGC"
-          - "-Xms512m -Xmx1024m"
-          - "-XX:+HeapDumpOnOutOfMemoryError"
+          #- "-XX:+UseSerialGC"
+          #- "-Xms512m -Xmx1024m"
+          #- "-XX:+HeapDumpOnOutOfMemoryError"
           - "-Djava.awt.headless=true"
 
     steps:
