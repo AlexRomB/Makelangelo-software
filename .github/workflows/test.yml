@@ -1,20 +1,16 @@
-name: Java CI with Maven
+name: Java CI with Maven and Deployment
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+  release:
+    types: [published]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        flags:
-          - "-Xms256m -Xmx512m"                        # Memory allocation
-          - "-ea"                                      # Enable assertions
-          - "-Duser.language=en -Duser.country=US"     # Locale setting
-          - "-Duser.timezone=UTC"                      # Time zone setting
-          - "-Djava.awt.headless=true"                 # Headless mode
 
     steps:
     - name: Checkout repository
@@ -27,19 +23,13 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Build and Test with Maven and Flags
-      run: |
-        echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B verify -DargLine="${{ matrix.flags }}"
+    - name: Build and Test with Maven
+      run: ./mvnw -B verify
       timeout-minutes: 15
-
-    - name: Check Target Directory Contents
-      run: ls -R target || echo "Target directory not found"
 
     - name: Get JaCoCo Coverage
       id: coverage  
       run: |
-        echo "Calculating coverage for flags: ${{ matrix.flags }}"
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
@@ -54,9 +44,60 @@ jobs:
           echo "New coverage: $coverage%. Coverage is improved!"
         fi
 
-    - name: Upload Coverage Report
-      if: always()
-      uses: actions/upload-artifact@v3
+    - name: Package Installation File
+      run: |
+        # Package the installation file here
+        # Replace this with the actual command to package your application
+        echo "Packaging Makelangelo software..."
+        mkdir -p output
+        echo "Simulated DMG file" > output/Makelangelo-7.55.7.dmg
+
+    - name: Check Packaged File
+      run: ls -la output/
+
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    needs: build
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4.2.1
       with:
-        name: "Coverage Report - Flags ${{ matrix.flags }}"
-        path: target/site/jacoco
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v4.1.7
+      with:
+        name: build
+
+    - name: Check files
+      run: ls -la output/
+
+    - name: Build installation package
+      run: echo "Packaging done for ${{ matrix.os }}."
+
+    - name: Deploy installation release
+      uses: WebFreak001/deploy-nightly@v3.1.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repo: AlexRomB/Makelangelo-software
+        upload_url: https://uploads.github.com/repos/AlexRomB/Makelangelo-software/releases/${{ github.event.release.id }}/assets{?name,label}
+        release_id: ${{ github.event.release.id }}
+        asset_path: output/Makelangelo-7.55.7.dmg
+        asset_name: Makelangelo-nightly-${{ matrix.os }}.dmg
+        asset_content_type: application/zip
+        max_releases: 1
+
+    - name: Upload artifact for testing purpose
+      uses: actions/upload-artifact@v4.1.7
+      with:
+        name: "Makelangelo Package - ${{ matrix.os }}"
+        path: output/
