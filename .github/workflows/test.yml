@@ -16,9 +16,13 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
+    - name: Set Maven JVM Options
+      run: |
+        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC"
+
     - name: Build and Test with Maven
       timeout-minutes: 15
-      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -XX:+UseSerialGC
+      run: ./mvnw -B verify
 
     - name: Get JaCoCo Coverage
       id: coverage  
