@@ -18,7 +18,7 @@ jobs:
 
     - name: Set Maven JVM Options
       run: |
-        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC"
+        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m"
 
     - name: Build and Test with Maven
       timeout-minutes: 15
