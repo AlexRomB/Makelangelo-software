@@ -15,7 +15,7 @@ jobs:
           - "-Xmx512m"
           - "-XX:MaxMetaspaceSize=128m"
           - "-XX:+ExitOnOutOfMemoryError"
-
+          
     steps:
     - uses: actions/checkout@v4
 
@@ -32,13 +32,11 @@ jobs:
 
     - name: Compile Project
       run: |
-        echo "Compiling project with JVM option: $MAVEN_OPTS"
         ./mvnw -B compile
         echo "Compilation completed."
 
     - name: Run Tests with JVM Option
       run: |
-        echo "Running tests with JVM option: $MAVEN_OPTS"
         ./mvnw -B test
         echo "Tests completed."
 
