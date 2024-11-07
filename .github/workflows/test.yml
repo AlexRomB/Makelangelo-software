@@ -18,7 +18,12 @@ jobs:
 
     - name: Set Maven JVM Options
       run: |
-        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m -XX:MaxMetaspaceSize=128m"
+        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
+        
+    - name: Log JVM Options
+      run: |
+        echo "Executing Maven build with the following JVM options:"
+        echo "$MAVEN_OPTS"
 
     - name: Build and Test with Maven
       timeout-minutes: 15
