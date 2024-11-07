@@ -11,8 +11,8 @@ jobs:
       matrix:
         flags:
           - "-Dfile.encoding=UTF-8"
-          #- "-XX:+UseSerialGC"
-          #- "-Xms512m -Xmx1024m"
+          - "-XX:+UseSerialGC"
+          - "-Xms512m -Xmx1024m"
           - "-XX:+HeapDumpOnOutOfMemoryError"
           - "-Djava.awt.headless=true"
 
@@ -30,8 +30,13 @@ jobs:
     - name: Build and Test with Maven and Flags
       run: |
         echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B clean verify jacoco:report -DargLine="${{ matrix.flags }}"
+        ./mvnw -B clean test jacoco:report -DargLine="${{ matrix.flags }}"
       timeout-minutes: 15
+
+    - name: Check JaCoCo Report Directory
+      run: |
+        echo "Contents of target/site/jacoco:"
+        ls -R target/site/jacoco || echo "Directory not found"
 
     - name: Get JaCoCo Coverage
       id: coverage  
