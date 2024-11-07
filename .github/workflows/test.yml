@@ -19,23 +19,36 @@ jobs:
     - name: Set and Log Maven JVM Options
       run: |
         export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
-        echo "Executing Maven build with the following JVM options:"
-        echo "$MAVEN_OPTS"
+        
+        echo "Starting Maven build with the following JVM options in real time:"
+        echo "-Dfile.encoding=UTF-8 : Ensures consistent file encoding (UTF-8) across different environments."
+        echo "-XX:+UseSerialGC : Activates the Serial Garbage Collector, suitable for low-resource environments and single-threaded operations."
+        echo "-Xmx512m : Limits the JVM heap size to 512 MB for controlled memory usage."
+        echo "-XX:MaxMetaspaceSize=128m : Restricts the maximum metaspace to 128 MB to manage class metadata memory."
+        echo "-XX:+ExitOnOutOfMemoryError : Forces an immediate exit on OutOfMemoryError to fail the build fast."
 
-    - name: Build and Test with Maven
+    - name: Build and Test with Maven (Real-Time Logs)
       timeout-minutes: 15
-      run: ./mvnw -B verify
+      run: |
+        echo "Initiating Maven build..."
+        
+        # Adding detailed logging for memory and GC behavior if enabled by flags
+        ./mvnw -B -X verify
+        
+        echo "Maven build completed."
 
     - name: Get JaCoCo Coverage
       id: coverage  
       run: |
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
+        echo "Code coverage extracted: $coverage%"
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
     - name: Fail if coverage has not improved.
       run: |
         coverage=$COVERAGE
         threshold=24.46
+        echo "Checking if coverage has improved. Threshold: $threshold, Current Coverage: $coverage"
         if (( $(echo "$coverage - $threshold <= 0.1" | bc -l) )); then
           echo "Coverage is not improved."
           exit 1
