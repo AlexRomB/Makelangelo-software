@@ -18,7 +18,7 @@ jobs:
 
     - name: Build and Test with Maven
       timeout-minutes: 15
-      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -Duser.timezone=UTC
+      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.awt.headless=true
 
     - name: Get JaCoCo Coverage
       id: coverage
