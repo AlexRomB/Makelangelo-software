@@ -18,7 +18,7 @@ jobs:
 
     - name: Build and Test with Maven
       timeout-minutes: 15
-      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -Xmx512m
+      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -XX:+UseSerialGC
 
     - name: Get JaCoCo Coverage
       id: coverage  
