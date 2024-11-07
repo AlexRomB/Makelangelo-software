@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java CI with Maven and Flags
 
 on:
   push:
@@ -7,23 +7,45 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        flags:
+          - "-Dfile.encoding=UTF-8"
+          #- "-XX:+UseSerialGC"
+          #- "-Xms512m -Xmx1024m"
+          - "-XX:+HeapDumpOnOutOfMemoryError"
+          - "-Djava.awt.headless=true"
 
-    - uses: actions/setup-java@v4.2.1
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4.2.1
       with:
         distribution: 'temurin'
         java-version: '17'
         cache: 'maven'
 
-    - name: Build and Test with Maven
+    - name: Build and Test with Maven and Flags
+      run: |
+        echo "Running build with flags: ${{ matrix.flags }}"
+        ./mvnw -B clean verify jacoco:report -DargLine="${{ matrix.flags }}"
       timeout-minutes: 15
-      run: ./mvnw -B verify -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.awt.headless=true
 
     - name: Get JaCoCo Coverage
-      id: coverage
+      id: coverage  
       run: |
+        if [ ! -f "target/site/jacoco/jacoco.csv" ]; then
+          echo "Error: jacoco.csv file not found."
+          exit 1
+        fi
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv)
+        echo "Extracted coverage: $coverage"
+        if [ -z "$coverage" ] || ! [[ "$coverage" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+          echo "Error: Coverage is not a valid number."
+          exit 1
+        fi
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
     - name: Fail if coverage has not improved.
@@ -36,3 +58,10 @@ jobs:
         else
           echo "New coverage: $coverage%. Coverage is improved!"
         fi
+
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: "Coverage Report - Flags ${{ matrix.flags }}"
+        path: target/site/jacoco
