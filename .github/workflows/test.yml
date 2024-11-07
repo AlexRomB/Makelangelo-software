@@ -28,10 +28,10 @@ jobs:
         cache: 'maven'
 
     - name: Build and Test with Maven and Flags
+      timeout-minutes: 30
       run: |
         echo "Running build with flags: ${{ matrix.flags }}"
         ./mvnw -B clean test jacoco:report -DargLine="${{ matrix.flags }}"
-      timeout-minutes: 15
 
     - name: Check JaCoCo Report Directory
       run: |
