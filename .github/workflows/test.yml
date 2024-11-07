@@ -10,11 +10,11 @@ jobs:
     strategy:
       matrix:
         flags:
-          - "-Xms512m -Xmx1024m"             # Taille initiale et maximale du tas
-          - "-XX:+UseG1GC"                   # Utilise le Garbage Collector G1
-          - "-XX:+UseParallelGC"             # Utilise le Garbage Collector parallèle
-          - "-XX:+UseStringDeduplication"    # Active la déduplication des chaînes (String Deduplication)
-          - "-Xlog:gc*"                      # Log des événements GC
+          - "-Xms256m -Xmx512m"             # Taille initiale et maximale du tas (mémoire)
+          - "-XX:+UseSerialGC"               # Utilise le ramasse-miettes Serial
+          - "-XX:+TieredCompilation"         # Active la compilation par niveaux
+          - "-XX:+HeapDumpOnOutOfMemoryError" # Dump mémoire en cas d'erreur OOM
+          - "-Dfile.encoding=UTF-8"          # Définit l'encodage des fichiers
 
     steps:
     - name: Checkout repository
@@ -30,25 +30,22 @@ jobs:
     - name: Build and Test with Maven and Flags
       run: |
         echo "Running build with flags: ${{ matrix.flags }}"
-        ./mvnw -B verify -DargLine="${{ matrix.flags }}"
+        ./mvnw -B clean verify jacoco:report -DargLine="${{ matrix.flags }}"
       timeout-minutes: 15
 
     - name: Get JaCoCo Coverage
       id: coverage
       run: |
-        # Exécute le script de couverture et capture le résultat
+        if [ ! -f "target/site/jacoco/jacoco.csv" ]; then
+          echo "Error: jacoco.csv file not found."
+          exit 1
+        fi
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv)
-        
-        # Affiche la couverture pour vérification
         echo "Extracted coverage: $coverage"
-
-        # Vérifie si la couverture est vide ou invalide
         if [ -z "$coverage" ] || ! [[ "$coverage" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
           echo "Error: Coverage is not a valid number."
           exit 1
         fi
-
-        # Enregistre la couverture dans les variables d'environnement
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
     - name: Fail if coverage has not improved
