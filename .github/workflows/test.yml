@@ -33,7 +33,7 @@ jobs:
         echo "Initiating Maven build..."
         
         # Adding detailed logging for memory and GC behavior if enabled by flags
-        ./mvnw -B -X verify
+        ./mvnw -B verify
         
         echo "Maven build completed."
 
