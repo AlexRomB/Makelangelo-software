@@ -7,6 +7,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flag:
+          - "-Dfile.encoding=UTF-8"
+          - "-XX:+UseSerialGC"
+          - "-Xmx512m"
+          - "-XX:MaxMetaspaceSize=128m"
+          - "-XX:+ExitOnOutOfMemoryError"
+
     steps:
     - uses: actions/checkout@v4
 
@@ -16,26 +25,22 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Set and Log Maven JVM Options
+    - name: Log JVM Option in Use
       run: |
-        export MAVEN_OPTS="-Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xmx512m -XX:MaxMetaspaceSize=128m -XX:+ExitOnOutOfMemoryError"
-        
-        echo "Starting Maven build with the following JVM options in real time:"
-        echo "-Dfile.encoding=UTF-8 : Ensures consistent file encoding (UTF-8) across different environments."
-        echo "-XX:+UseSerialGC : Activates the Serial Garbage Collector, suitable for low-resource environments and single-threaded operations."
-        echo "-Xmx512m : Limits the JVM heap size to 512 MB for controlled memory usage."
-        echo "-XX:MaxMetaspaceSize=128m : Restricts the maximum metaspace to 128 MB to manage class metadata memory."
-        echo "-XX:+ExitOnOutOfMemoryError : Forces an immediate exit on OutOfMemoryError to fail the build fast."
+        export MAVEN_OPTS="${{ matrix.flag }}"
+        echo "Running Maven build with JVM option: $MAVEN_OPTS"
 
-    - name: Build and Test with Maven (Real-Time Logs)
-      timeout-minutes: 15
+    - name: Compile Project
       run: |
-        echo "Initiating Maven build..."
-        
-        # Adding detailed logging for memory and GC behavior if enabled by flags
-        ./mvnw -B verify
-        
-        echo "Maven build completed."
+        echo "Compiling project with JVM option: $MAVEN_OPTS"
+        ./mvnw -B compile
+        echo "Compilation completed."
+
+    - name: Run Tests with JVM Option
+      run: |
+        echo "Running tests with JVM option: $MAVEN_OPTS"
+        ./mvnw -B test
+        echo "Tests completed."
 
     - name: Get JaCoCo Coverage
       id: coverage  
@@ -44,14 +49,14 @@ jobs:
         echo "Code coverage extracted: $coverage%"
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
 
-    - name: Fail if coverage has not improved.
+    - name: Check Coverage Improvement
       run: |
         coverage=$COVERAGE
         threshold=24.46
-        echo "Checking if coverage has improved. Threshold: $threshold, Current Coverage: $coverage"
+        echo "Coverage threshold: $threshold, Current coverage: $coverage"
         if (( $(echo "$coverage - $threshold <= 0.1" | bc -l) )); then
-          echo "Coverage is not improved."
+          echo "Coverage has not improved."
           exit 1
         else
-          echo "New coverage: $coverage%. Coverage is improved!"
+          echo "Coverage improved to $coverage%!"
         fi
