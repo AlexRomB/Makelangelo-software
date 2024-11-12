@@ -11,9 +11,9 @@ jobs:
       matrix:
         flag:
           - "-Dfile.encoding=UTF-8"
-          - "-XX:+UseSerialGC"
-          - "-Xmx512m"
-          - "-XX:MaxMetaspaceSize=128m"
+          - "-XX:+UseG1GC"
+          - "-Xmx1g"
+          - "-XX:+HeapDumpOnOutOfMemoryError"
           - "-XX:+ExitOnOutOfMemoryError"
           
     steps:
