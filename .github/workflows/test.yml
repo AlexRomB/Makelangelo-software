@@ -51,7 +51,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: "Coverage Report - Flag ${{ matrix.flag }}"
+        name: "Coverage-Report-Flag-${{ matrix.flag | replace(':', '') | replace('+', '') | replace('-', '') }}"
         path: target/site/jacoco
         retention-days: 7
 
