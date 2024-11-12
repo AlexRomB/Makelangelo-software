@@ -58,7 +58,7 @@ jobs:
 
     - name: Upload Coverage Report
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "Coverage-Report-Flag-${{ env.SANITIZED_FLAG }}"
         path: target/site/jacoco
