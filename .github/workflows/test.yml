@@ -46,6 +46,14 @@ jobs:
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "Code coverage extracted: $coverage%"
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
+        
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: "Coverage Report - Flag ${{ matrix.flag }}"
+        path: target/site/jacoco
+        retention-days: 7
 
     - name: Check Coverage Improvement
       run: |
