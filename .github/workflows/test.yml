@@ -46,23 +46,6 @@ jobs:
         coverage=$(python3 config/coverage.py target/site/jacoco/jacoco.csv) 
         echo "Code coverage extracted: $coverage%"
         echo "COVERAGE=$coverage" >> $GITHUB_ENV
-        
-    - name: Set Sanitized Artifact Name
-      run: |
-        # Sanitize the flag by removing invalid characters
-        sanitized_flag="${{ matrix.flag }}"
-        sanitized_flag="${sanitized_flag//:/}"    # Remove colons
-        sanitized_flag="${sanitized_flag//+}"     # Remove plus signs
-        sanitized_flag="${sanitized_flag//-}"     # Remove hyphens
-        echo "SANITIZED_FLAG=$sanitized_flag" >> $GITHUB_ENV
-
-    - name: Upload Coverage Report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: "Coverage-Report-Flag-${{ env.SANITIZED_FLAG }}"
-        path: target/site/jacoco
-        retention-days: 7
 
     - name: Check Coverage Improvement
       run: |
