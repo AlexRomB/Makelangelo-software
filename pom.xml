@@ -315,30 +315,25 @@ It pairs really well with Marlin-polargraph, the code in the brain of the robot 
 			</plugin>
 			<!-- Code Coverage report generation -->
 			<plugin>
-			    <groupId>org.jacoco</groupId>
-			    <artifactId>jacoco-maven-plugin</artifactId>
-			    <version>0.8.11</version>
-			    <executions>
-			        <execution>
-			            <goals>
-			                <goal>prepare-agent</goal>
-			            </goals>
-			        </execution>
-			        <execution>
-			            <id>generate-code-coverage-report</id>
-			            <phase>test</phase>
-			            <goals>
-			                <goal>report</goal>
-			            </goals>
-			            <configuration>
-			                <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
-			                <outputFormats>
-			                    <outputFormat>CSV</outputFormat>
-			                    <outputFormat>HTML</outputFormat>
-			                </outputFormats>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.11</version>
+				<configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>generate-code-coverage-report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 
